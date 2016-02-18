@@ -9,6 +9,8 @@ import java.sql.Statement;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -21,6 +23,9 @@ import com.ict.nasc.weike.webcontrol.model.WeikePiecework;
  * @version $Id: PieceworkTool.java, v 0.1 2015-12-4 下午12:18:31  Exp $
  */
 public class PieceworkTool {
+    
+    /**日志*/
+    private static Log              logger = LogFactory.getLog("NORMAL");
     /**
      * 
      * @param dl
@@ -233,7 +238,7 @@ public class PieceworkTool {
         int rs = stmt.executeUpdate(sql.replace("\r", " ").replace("\n", " ")
             .replace("'null'", "null"));
         if (rs < 1) {
-            System.out.println("【插入数据库失败】taskId:" + piecework.getTaskId() + ";curUrl:"
+            logger.error("【插入数据库失败】taskId:" + piecework.getTaskId() + ";curUrl:"
                                    + piecework.getCurTaskUrl() + ";pieceworkId"
                                    + piecework.getPieceworkId());
             throw new SQLException("插入数据库失败");

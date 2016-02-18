@@ -1,47 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Logback Configuration.  -->
+<!-- Logback Configuration. -->
 <configuration debug="false">
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <target>System.out</target>
-        <encoding>${loggingCharset}</encoding>
-        <filter class="com.alibaba.citrus.logconfig.logback.LevelRangeFilter">
-            <levelMax>INFO</levelMax>
-        </filter>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern><![CDATA[
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.out</target>
+		<encoding>${loggingCharset}</encoding>
+		<filter class="com.alibaba.citrus.logconfig.logback.LevelRangeFilter">
+			<levelMax>INFO</levelMax>
+		</filter>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern><![CDATA[
 %n%-4r [%d{yyyy-MM-dd HH:mm:ss} %X{productionMode}] - %X{method} %X{requestURIWithQueryString} [ip=%X{remoteAddr}, ref=%X{referrer}, ua=%X{userAgent}, sid=%X{cookie.JSESSIONID}]%n  %-5level %logger{35} - %m%n
             ]]></pattern>
-        </layout>
-    </appender>
+		</layout>
+	</appender>
 
-    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
-        <target>System.err</target>
-        <encoding>${loggingCharset}</encoding>
-        <filter class="com.alibaba.citrus.logconfig.logback.LevelRangeFilter">
-            <levelMin>WARN</levelMin>
-        </filter>
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern><![CDATA[
+	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.err</target>
+		<encoding>${loggingCharset}</encoding>
+		<filter class="com.alibaba.citrus.logconfig.logback.LevelRangeFilter">
+			<levelMin>WARN</levelMin>
+		</filter>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern><![CDATA[
 %n%-4r [%d{yyyy-MM-dd HH:mm:ss} %X{productionMode}] - %X{method} %X{requestURIWithQueryString} [ip=%X{remoteAddr}, ref=%X{referrer}, ua=%X{userAgent}, sid=%X{cookie.JSESSIONID}]%n  %-5level %logger{35} - %m%n
             ]]></pattern>
-        </layout>
-    </appender>
+		</layout>
+	</appender>
 
-    <logger name="org.apache">
-        <level value="INFO" />
-    </logger>
+	<appender name="NORMAL"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<Prudent>true</Prudent>
+		<encoding>UTF-8</encoding>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>
+				/bedroom/duanxueye/weike/log/weike.%d{yyyy-MM-dd}.log
+			</FileNamePattern>
+		</rollingPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern><![CDATA[
+%n%-4r %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35}[%L] %m
+            ]]></pattern>
+		</layout>
+	</appender>
+	<appender name="TASK"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<Prudent>true</Prudent>
+		<encoding>UTF-8</encoding>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>
+				/bedroom/duanxueye/weike/log/weike-task.%d{yyyy-MM-dd}.log
+			</FileNamePattern>
+		</rollingPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern><![CDATA[
+%n%-4r %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35}[%L] %m
+            ]]></pattern>
+		</layout>
+	</appender>
+	<appender name="NOT-EXIST"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<Prudent>true</Prudent>
+		<encoding>UTF-8</encoding>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>
+				/bedroom/duanxueye/weike/log/weike-not-exist.%d{yyyy-MM-dd}.log
+			</FileNamePattern>
+		</rollingPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern><![CDATA[
+%n%-4r %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35}[%L] %m
+            ]]></pattern>
+		</layout>
+	</appender>
+	<logger name="org.apache">
+		<level value="INFO" />
+	</logger>
 
-    <logger name="org.springframework">
-        <level value="INFO" />
-    </logger>
+	<logger name="org.springframework">
+		<level value="INFO" />
+	</logger>
 
-    <logger name="com.alibaba.citrus.springext.support.context">
-        <level value="INFO" />
-    </logger>
-
-    <root>
-        <level value="${loggingLevel}" />
-        <appender-ref ref="STDERR" />
-        <appender-ref ref="STDOUT" />
-    </root>
+	<logger name="com.alibaba.citrus.springext.support.context">
+		<level value="INFO" />
+	</logger>
+	<logger name="TASK">
+		<level value="info" />
+		<appender-ref ref="TASK" />
+	</logger>
+	<logger name="NOT-EXIST">
+		<level value="info" />
+		<appender-ref ref="NOT-EXIST" />
+	</logger>
+	<root>
+		<level value="info" />
+		<appender-ref ref="STDERR" />
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="NORMAL" />
+	</root>
 </configuration>

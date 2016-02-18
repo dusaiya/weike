@@ -77,7 +77,7 @@ public class CreateSubTaskTest extends TestCase {
                     }
                 }
             }
-            System.out.println("done");
+            System.out.println("done,total:" + i);
         } catch (ClassNotFoundException e) {
             System.out.println("ClassNotFoundException;" + e);
         } catch (SQLException e) {
@@ -94,10 +94,18 @@ public class CreateSubTaskTest extends TestCase {
      * @version $Id: CreateSubTaskTest.java, v 0.1 2015-12-4 下午6:12:04  Exp $
      */
     public class Sqlmodel {
+        /****/
         Integer count;
+        /****/
         String  url;
+        /****/
         String  taskId;
 
+        /**
+         * @param taskId
+         * @param url
+         * @param count
+         * **/
         public Sqlmodel(String taskId, String url, Integer count) {
             this.count = count;
             this.url = url;

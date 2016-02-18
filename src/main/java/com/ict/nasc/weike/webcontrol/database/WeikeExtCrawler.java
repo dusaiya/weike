@@ -23,6 +23,8 @@ import com.ict.nasc.weike.webcontrol.tools.TaskTool;
  * @version $Id: zhubajie.java, v 0.1 2015-11-10 上午10:01:03  Exp $
  */
 public class WeikeExtCrawler extends DeepCrawler {
+    /**日志*/
+    //private static Log              logger = LogFactory.getLog("NORMAL");
     /**
      * 数据库连接
      */

@@ -7,6 +7,9 @@ package com.ict.nasc.weike.webcontrol.database;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -25,6 +28,12 @@ import com.ict.nasc.weike.webcontrol.tools.TaskTool;
  * @version $Id: zhubajie.java, v 0.1 2015-11-10 上午10:01:03  Exp $
  */
 public class WeikeCrawler extends DeepCrawler {
+
+    /**日志*/
+    private static Log       logger = LogFactory.getLog("TASK");
+    
+    /**日志*/
+    private static Log       notexist_logger = LogFactory.getLog("NOT-EXIST");
     /**
      * 数据库连接
      */
@@ -37,14 +46,6 @@ public class WeikeCrawler extends DeepCrawler {
      */
     public WeikeCrawler(String crawlPath) throws Exception {
         super(crawlPath);
-        /**
-         * 获取新浪微博的cookie，账号密码以明文形式传输，请使用小号
-        StringBuilder cookie = new StringBuilder();
-        cookie.append(LoginCookieConstant.userIdCookieAttrName + "="
-                      + LoginCookieConstant.userIdValue + "; ");
-        cookie.append(LoginCookieConstant.userKeyCookieAttrName + "="
-                      + LoginCookieConstant.userKeyValue + "; ");
-         */
         HttpRequesterImpl myRequester = (HttpRequesterImpl) this.getHttpRequester();
         myRequester
             .setCookie("__utma=149590013.933053285.1447139339.1447139339.1447139339.1; __utmb=149590013.4.10.1447139339; __utmc=149590013; __utmz=149590013.1447139339.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); __utmt=1; Hm_lvt_20e969969d6befc1cc3a1bf81f6786ef=1447139339; Hm_lpvt_20e969969d6befc1cc3a1bf81f6786ef=1447139435; uniqid=4f54ae15df6f37d1ecbf1f0fecda7f9d; _analysis=74cf%2Fb3IzGoqDE3b252Nc5ZXkNbze88mnyffhnyJeMpEBRG3wOKQ6w3vAcQ4kNROol6GVM8Uy4lC3f6JbAOVKjRd231O6R09%2F3zFARaPtSULIlZRDUWg9pBgrN7b1zWOEZ3DcksXG6yBfKjV5dAqgPFypKvdboJrzmtFb4MnrSlua2xP8mowX%2F8SnLeHJhKIYB8fjSytyRDqLsqbn23IDrxFRjLNsUyKvEP%2BE0cgdFeF2GUxn1tOueUMX0fBuWNNxQ; fvtime=b97dGOq7lIuAkS8tKB6adz315xV6YgwBoSzbFwsmoDbebV1ixcYG; _uq=a25207e19ba0a417e83d12075e1dbc12; footerBarStateTask=0; _uv=2; userkey=7f17Pa2UMYVPkq4TXiQ6AHEYJRhz9%2B4x33zVMLT2DOp3vzrrL3I32lCLGecgsZIzlUssv3JVRCDve4Z3B8Odn2mZus4cjAsI8prdKyoo3aY4VEC4%2FNOyDF8AteyyMRvpq7wSxgRBaVMSeaqd%2BE%2FN43IR97YehGPpMFryw58dMxWmzwYEMGDye0%2BSY267BSY%2BMwPnrykOr5Q40hKz%2BIMSqV1t3rHrmYQxC9H%2B4McJQaRUMtAzUaIARFURGXzNEeZKhCWuKuIKz4qT; userid=13870023; nickname=crowdextract; brandname=crowdextract; viewed_task=13870023%3A6452414; _zbj_chat_=102; webimMainPage=go7lc025k1f");
@@ -57,7 +58,7 @@ public class WeikeCrawler extends DeepCrawler {
             //实际处理
             fileOutput(page);
         } catch (Exception e) {
-            System.out.println(e);
+            logger.error("[页面处理异常]" + page.getUrl(), e);
         }
         return null;
     }
@@ -71,8 +72,16 @@ public class WeikeCrawler extends DeepCrawler {
         try {
             WeikeTask task = new WeikeTask();
             task.setTaskLink(page.getUrl());
+            Elements dls = page.getDoc().select("title");
+            if (!CollectionUtils.isEmpty(dls)) {
+                if (dls.get(0).text().contains("抱歉，您要查看的需求走丢了")) {
+                    notexist_logger.warn("无该页面:" + page.getUrl());
+                    return null;
+                }
+                return null;
+            }
             //文章标题
-            Elements dls = page.getDoc().select("h1");
+            dls = page.getDoc().select("h1");
             task.setTaskTitle(dls.get(0).text());
             //发布者信息
             dls = page.getDoc().select("div.tctitle").select("a");
@@ -129,12 +138,11 @@ public class WeikeCrawler extends DeepCrawler {
             //子页面信息
             dls = page.getDoc().select("div.pagination").select("a");
             TaskTool.subUrlInfo(page, task, dls);
-
-            TaskTool.insertSql(task, stmt);
-            //System.out.println(task);
+            logger.info(task);
+            //TaskTool.insertSql(task, stmt);
 
         } catch (Exception e) {
-            System.out.println(page.getUrl() + "【处理异常】" + e);
+            logger.error(page.getUrl() + "【处理异常】", e);
         }
         return null;
     }

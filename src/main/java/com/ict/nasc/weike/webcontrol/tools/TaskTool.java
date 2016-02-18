@@ -9,6 +9,8 @@ import java.sql.Statement;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -31,6 +33,8 @@ import com.ict.nasc.weike.webcontrol.model.WeikeTaskMode;
  * @version $Id: TaskTool.java, v 0.1 2015-12-2 上午11:23:29  Exp $
  */
 public class TaskTool {
+    /**日志*/
+    private static Log logger = LogFactory.getLog(TaskTool.class);
 
     /**
      * 根据不同交易类型处理交易信息
@@ -142,7 +146,7 @@ public class TaskTool {
                 task.setpEvaluationDate(dateStr);
                 break;
             default:
-                System.out.println(task.getTaskLink() + "【进程转换异常】" + task.getProcessInfo());
+                logger.error(task.getTaskLink() + "【进程转换异常】" + task.getProcessInfo());
                 break;
         }
     }
@@ -203,7 +207,7 @@ public class TaskTool {
             end = paymentStr.indexOf("个");
             task.setNeedCount(Integer.parseInt(paymentStr.substring(start + 2, end)));
         } else {
-            System.out.println(task.getTaskLink() + "【赏金分配异常】:" + paymentStr);
+            logger.error(task.getTaskLink() + "【赏金分配异常】:" + paymentStr);
         }
     }
 
@@ -256,7 +260,7 @@ public class TaskTool {
         } else if (modestr.contains("招标")) {
             taskMode = WeikeTaskMode.inviteTender;
         } else {
-            System.out.println("【模式异常】:" + modestr);
+            logger.error("【模式异常】:" + modestr);
         }
         return taskMode;
     }
@@ -429,21 +433,19 @@ public class TaskTool {
                      + "','"
                      + task.getpEvaluationStatus()
                      + "','" + task.getpEvaluationDate() + "')";
-        ;
 
-        System.out.println("插入语句"
-                           + sql.replace("\r", " ").replace("\n", " ").replace("'null'", "null"));
+        logger.info("插入语句:" + sql.replace("\r", " ").replace("\n", " ").replace("'null'", "null"));
         try {
             int rs = stmt.executeUpdate(sql);
             if (rs == 1) {
-                System.out.println(task.getTaskId() + "【插入数据库成功】");
+                logger.info(task.getTaskId() + "【插入数据库成功】");
             } else {
-                System.out.println(task.getTaskId() + "【插入数据库失败】");
+                logger.error(task.getTaskId() + "【插入数据库失败】");
             }
         } catch (SQLException e) {
-            System.out.println("插入Sql【数据库异常】" + e);
+            logger.error("插入Sql【数据库异常】", e);
         } catch (Exception e) {
-            System.out.println("插入Sql【其它异常】" + e);
+            logger.error("插入Sql【其它异常】", e);
         }
     }
 
@@ -464,14 +466,14 @@ public class TaskTool {
             int rs = stmt.executeUpdate(sql.replace("\r", " ").replace("\n", " ")
                 .replace("'null'", "null"));
             if (rs == 1) {
-                System.out.println(taskId + "【插入数据库成功】");
+                logger.info(taskId + "【插入数据库成功】");
             } else {
-                System.out.println(taskId + "【插入数据库失败】");
+                logger.error(taskId + "【插入数据库失败】");
             }
         } catch (SQLException e) {
-            System.out.println("插入Sql【数据库异常】" + e);
+            logger.error("插入Sql【数据库异常】", e);
         } catch (Exception e) {
-            System.out.println("插入Sql【其它异常】" + e);
+            logger.error("插入Sql【其它异常】", e);
         }
     }
 }

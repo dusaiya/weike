@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
@@ -26,11 +28,13 @@ import com.ict.nasc.weike.webcontrol.tools.PieceworkTool;
  * @version $Id: WeiboDetailCrawler.java, v 0.1 2015-11-18 下午4:22:31  Exp $
  */
 public class WeikePieceworkCrawler extends DeepCrawler {
+    /**日志*/
+    private static Log logger = LogFactory.getLog("NORMAL");
 
     /**
      * 数据库连接
      */
-    private Statement stmt;
+    private Statement  stmt;
 
     /**
      * @param crawlPath
@@ -53,7 +57,7 @@ public class WeikePieceworkCrawler extends DeepCrawler {
         try {
             fileOutput(page);
         } catch (Exception e) {
-            System.out.println("[外围处理]" + e);
+            logger.error(page.getUrl() + "[外围处理]", e);
         }
 
         return null;
@@ -89,7 +93,7 @@ public class WeikePieceworkCrawler extends DeepCrawler {
                 try {
                     stmt.executeUpdate(errSql);
                 } catch (Exception e1) {
-                    System.out.println(curTaskUrl + "【子任务异常记录失败】" + errSql + "; eMsg=" + e1);
+                    logger.error(curTaskUrl + "【子任务异常记录失败】" + errSql, e1);
                 }
             }
         }
@@ -97,7 +101,7 @@ public class WeikePieceworkCrawler extends DeepCrawler {
             stmt.executeUpdate("insert into piecework_record(cur_task_url,count,finished) values('"
                                + curTaskUrl + "'," + pieceworkCount + "," + finished + ")");
         } catch (Exception e) {
-            System.out.println(curTaskUrl + "【任务结果记录失败】eMsg=" + e);
+            logger.error(curTaskUrl + "【任务结果记录失败】", e);
         }
     }
 
@@ -118,10 +122,10 @@ public class WeikePieceworkCrawler extends DeepCrawler {
             }
             crawler.start(1);
         } catch (Exception e) {
-            System.out.println("框架异常:"+e);
+            logger.error("框架异常", e);
         }
     }
-    
+
     /**
     Integer count = rs.getInt("sub_Count");
     if (0 == count) {
