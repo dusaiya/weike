@@ -28,7 +28,7 @@ public class TaskCrawler {
         try {
             WeikeTitleCrawler crawler = new WeikeTitleCrawler(CommonConstant.crawlerdbPath);
             crawler.setThreads(300);
-            for (int i = 6365130 ; i < 7000000; i++) {
+            for (int i = 5000000 ; i < 6000000; i++) {
                 crawler.addSeed("http://task.zbj.com/" + i + "/");
             }
             crawler.start(1);
