@@ -24,12 +24,12 @@ public class SelectSqlTest extends TestCase {
      */
     public void test_select() {
         try {
-            String sql = null;
             Statement stmt = DbConnectionTool.getDbStatement();
-            sql = "select task_link from task_list_final limit 10";
+            String sql = "select task_id from task_id_l limit 10 ";
             ResultSet result = stmt.executeQuery(sql);
-            while(result.next()){
-                System.out.println(result.getString("task_link"));
+            while (result.next()) {
+                int i = result.getInt("task_id");
+                System.out.println("http://task.zbj.com/" + i + "/");
             }
         } catch (ClassNotFoundException e) {
             System.out.println(e);

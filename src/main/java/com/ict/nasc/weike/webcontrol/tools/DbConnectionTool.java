@@ -43,7 +43,7 @@ public class DbConnectionTool {
     public static Statement getDbStatement() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
         Connection conn = null;
-        String url = local;
+        String url = remote_in_lab;
         conn = DriverManager.getConnection(url);
         Statement stmt = conn.createStatement();
         return stmt;

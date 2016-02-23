@@ -4,6 +4,8 @@
  */
 package com.alibaba.webx.weike.app1.module.screen;
 
+import java.sql.ResultSet;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -27,8 +29,11 @@ public class TaskCrawler {
 
         try {
             WeikeTitleCrawler crawler = new WeikeTitleCrawler(CommonConstant.crawlerdbPath);
-            crawler.setThreads(300);
-            for (int i = 5000000 ; i < 6000000; i++) {
+            crawler.setThreads(120);
+            String sql = "select task_id from task_id_l";
+            ResultSet result = crawler.getStmt().executeQuery(sql);
+            while (result.next()) {
+                int i = result.getInt("task_id");
                 crawler.addSeed("http://task.zbj.com/" + i + "/");
             }
             crawler.start(1);
