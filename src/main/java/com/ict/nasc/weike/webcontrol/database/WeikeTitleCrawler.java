@@ -5,6 +5,7 @@
 package com.ict.nasc.weike.webcontrol.database;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.Statement;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -108,29 +109,14 @@ public class WeikeTitleCrawler extends DeepCrawler {
     public static void main(String[] args) throws Exception {
         try {
             WeikeTitleCrawler crawler = new WeikeTitleCrawler("/Users/alibaba/Desktop/zhubajie");
-            crawler.setThreads(25);
-            //crawler.addSeed("http://task.zhubajie.com/6452414/");
-            //http://task.zhubajie.com/o-wlyx/网络营销 http://task.zbj.com/o-qtwltg/ 网络推广; http://task.zbj.com/o-yxrj/移动端推广
-            //http://task.zbj.com/o-seoyouhua/ SEO优化
-            // http://task.zbj.com/o-ggtfkh/ 广告投放，开户 6条数据。。
-            //http://task.zbj.com/o-xxtg/ 无数据
-            // http://task.zbj.com/o-shichangdc/
-            //http://task.zbj.com/o-wdtg/ 网店推广
-            //设计类 总共8个
-            //http://task.zbj.com/o-wdzx/ 网店设计
-            //http://task.zbj.com/o-ggsj/ 广告设计
-            //http://task.zbj.com/o-vi/ vi设计
-            //http://task.zbj.com/o-bzsj/ 包装设计
-            //http://task.zbj.com/o-xcpsj/ 宣传品设计
-            //http://task.zbj.com/o-mpkpsj/ 卡牌设计 21
-            //http://task.zbj.com/o-sjzzsj/ 书籍制作 24
-            //http://task.zbj.com/o-pptzz/ ppt制作  11
-            String catagoryLink = "http://task.zbj.com/o-pptzz/";
-            crawler.addSeed(catagoryLink);
-            String prefix = catagoryLink + "p";
-            Integer endPage = 11;
-            for (Integer i = 2; i <= endPage; i++) {
-                crawler.addSeed(prefix + i + ".html");
+            crawler.setThreads(10);
+            String sql = "select a.task_link from mid_task_list_final a "
+                         + "left join task b on a.task_id_str = b.task_id "
+                         + "where  b.task_id is null "
+                         + "limit 10000";
+            ResultSet result = crawler.getStmt().executeQuery(sql);
+            while (result.next()) {
+                crawler.addSeed(result.getString("task_link"));
             }
             crawler.start(1);
         } catch (Exception e) {

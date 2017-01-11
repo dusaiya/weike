@@ -16,6 +16,9 @@ public enum WeikeTaskMode {
     /**计件**/
     count("count", "计件"),
 
+    /**粉丝数计算**/
+    weiboFans("weiboFans", "微博粉丝数"),
+
     /**招标**/
     inviteTender("inviteTender", "招标"),
 

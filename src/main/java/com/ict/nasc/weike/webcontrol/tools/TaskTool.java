@@ -4,8 +4,11 @@
  */
 package com.ict.nasc.weike.webcontrol.tools;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -16,6 +19,8 @@ import org.jsoup.select.Elements;
 
 import cn.edu.hfut.dmic.webcollector.model.Page;
 
+import com.ict.nasc.weike.webcontrol.model.FirstCatagory;
+import com.ict.nasc.weike.webcontrol.model.SecondCatagory;
 import com.ict.nasc.weike.webcontrol.model.WeikePaymentType;
 import com.ict.nasc.weike.webcontrol.model.WeikeTask;
 import com.ict.nasc.weike.webcontrol.model.WeikeTaskMode;
@@ -27,7 +32,7 @@ import com.ict.nasc.weike.webcontrol.model.WeikeTaskMode;
  * <li>{@link #releaseInfo(WeikeTask, Elements)} 发布人信息编辑</li> 
  * <li>{@link #paymentInfo(Elements, WeikeTask)} 任务酬劳</li>
  * <li>{@link #subUrlInfo(Page, WeikeTask, Elements)} 子页面连接处理</li>
- * <li>{@link #genProcessInfo(WeikeTask, Element, WeikeTaskMode)} 任务进度处理</li>
+ * <li>{@link #genProcessInfo(WeikeTask, Element)} 任务进度处理</li>
  * </ul>
  * @author xueye.duanxy
  * @version $Id: TaskTool.java, v 0.1 2015-12-2 上午11:23:29  Exp $
@@ -52,7 +57,7 @@ public class TaskTool {
         genPaymentInfo(task, modedoc, taskMode);
         //修饰流程信息process
         modedoc = taskModeBlock.select("div.modecont").get(0);
-        genProcessInfo(task, modedoc, taskMode);
+        genProcessInfo(task, modedoc);
 
     }
 
@@ -60,21 +65,27 @@ public class TaskTool {
      * 
      * @param task
      * @param modedoc
-     * @param taskMode
      */
-    public static void genProcessInfo(WeikeTask task, Element modedoc, WeikeTaskMode taskMode) {
+    public static void genProcessInfo(WeikeTask task, Element modedoc) {
         task.setProcessInfo(modedoc.text());
         Elements dls = modedoc.select("li");
+        String taskFinished = "全部完成";
         for (Element dl : dls) {
             String processMsg = dl.select("p").get(0).text();
             String status = "未进行";
             if ("cur".equals(dl.attr("class"))) {
                 status = "进行中";
-            } else if (CollectionUtils.isNotEmpty(dl.select("span.gou"))) {
+            }
+            if (CollectionUtils.isNotEmpty(dl.select("span.gou"))) {
                 status = "完成";
+            }
+            if (!status.equals("完成")) {
+                //只要有一个没有完成，就 taskFinished 置为 false
+                taskFinished = "未完成";
             }
             //进程完成细节
             processDetail(task, processMsg, status);
+            task.setTaskStatus(taskFinished);//更新taskFinished 
 
         }
 
@@ -100,16 +111,17 @@ public class TaskTool {
         }
 
         int process = 0;
-        if (processMsg.contains("发布需求")) {
+        if (processMsg.contains("发布需求") || processMsg.contains("托管赏金")) {
             process = 1;
-        } else if (processMsg.contains("服务商交稿") || processMsg.contains("匹配服务商")) {
+        } else if (processMsg.contains("服务商交稿") || processMsg.contains("匹配服务商")
+                   || processMsg.contains("服务商投标") || processMsg.contains("服务商报价")) {
             process = 2;
         } else if (processMsg.contains("雇主设置合格稿件") || processMsg.contains("雇主选稿")
                    || processMsg.contains("选择服务商")) {
             process = 3;
         } else if (processMsg.contains("中标公示")) {
             process = 4;
-        } else if (processMsg.contains("服务商工作")) {
+        } else if (processMsg.contains("服务商工作") || processMsg.contains("服务商开始工作")) {
             process = 5;
         } else if (processMsg.contains("交易成功") || processMsg.contains("验收并付款")) {
             process = 6;
@@ -217,9 +229,15 @@ public class TaskTool {
      * @param taskModeBlock
      */
     private static void countPayment(WeikeTask task, Elements taskModeBlock) {
-        task.setPaymentType(WeikePaymentType.piece.getDesc());
+
         task.setPaymentDetail(taskModeBlock.get(0).text());
         String paymentStr = taskModeBlock.select("em").get(0).text();
+        if (paymentStr.contains("按粉丝数计算")) {
+            task.setPaymentType(WeikePaymentType.weiboFans.getDesc());
+            return;
+        } else {
+            task.setPaymentType(WeikePaymentType.piece.getDesc());
+        }
         int start = paymentStr.indexOf("￥");
         int end = paymentStr.indexOf("，已");
         if (end < 0) {
@@ -242,7 +260,11 @@ public class TaskTool {
         }
         Elements limitDoc = taskModeBlock.select("em");
         if (CollectionUtils.isNotEmpty(limitDoc) && limitDoc.size() > 1) {
-            task.setCountPerWorker(Integer.parseInt(taskModeBlock.select("em").get(1).text()));
+            BigDecimal countPerWorker = new BigDecimal(taskModeBlock.select("em").get(1).text());
+            if (countPerWorker.compareTo(BigDecimal.valueOf(Integer.parseInt("10000000"))) >= 0) {
+                countPerWorker = new BigDecimal("10000000");
+            }
+            task.setCountPerWorker(countPerWorker.intValue());
         }
     }
 
@@ -271,10 +293,15 @@ public class TaskTool {
      * @param dls
      */
     public static void releaseInfo(WeikeTask task, Elements dls) {
-        if (!CollectionUtils.isEmpty(dls)) {
+        Elements dls1 = dls.select("div.tctitle").select("a");
+        if (!CollectionUtils.isEmpty(dls1)) {
             //发布者姓名
-            task.setReleaseUserName(dls.get(0).text());
-            String userUrl = dls.get(0).attr("href");
+            String releaseUserName = dls1.get(0).text();
+            if (releaseUserName != null) {
+                releaseUserName = releaseUserName.replace("'", "‘");
+            }
+            task.setReleaseUserName(releaseUserName);
+            String userUrl = dls1.get(0).attr("href");
             //发布者主页
             task.setReleaseUserUrl(userUrl);
             String[] strList = userUrl.split("/");
@@ -283,7 +310,56 @@ public class TaskTool {
                 task.setReleaseUserId(strList[3]);
             }
         }
+        //补充发布者id
+        if (task.getReleaseUserId() == null) {
+            dls1 = dls.select("img");
+            task.setReleaseUserId(ImgUrl2UserId.imgUrl2UserId(dls1.attr("src")));
+        }
 
+    }
+
+    /**
+     * 
+     * @param task
+     * @param dls
+     */
+    public static void getCatagory(WeikeTask task, Elements dls) {
+        List<String> catagoryList = new ArrayList<String>();
+        int i = 0;
+        for (Element dl : dls) {
+            String str = dl.select("a").attr("title");
+            if ("首页".equals(str) || "需求市场".equals(str)) {
+                continue;
+            }
+            //只有第一个元素来判断是否为一级类目
+            if (i == 0 && null == FirstCatagory.getByCatagory(str)) {
+                //如果第一个元素不是一级类目，则判断是否为二级类目
+                SecondCatagory secondCatagory = SecondCatagory.getBySecondCatagory(str);
+                if (null == secondCatagory) {
+                    break;//第一个元素又不是一级类目、又不是二级类目，就break，记录全类目str单独判断
+                } else {
+                    //如果是二级类目，就将一级类目补充到队列
+                    catagoryList.add(secondCatagory.getFirstCatagoryStr());
+                }
+            }
+            catagoryList.add(str);
+            i++;
+        }
+        task.setCatagory(dls.text());
+        if (CollectionUtils.isNotEmpty(catagoryList)) {
+            switch (catagoryList.size()) {
+                case 3:
+                    task.setThirdCatagory(catagoryList.get(2));
+                case 2:
+                    task.setSecondCatagory(catagoryList.get(1));
+                case 1:
+                    task.setFirstCatagory(catagoryList.get(0));
+                    break;
+                default:
+                    break;
+
+            }
+        }
     }
 
     /**
@@ -315,7 +391,7 @@ public class TaskTool {
                                                                           throws NumberFormatException {
         if (!CollectionUtils.isEmpty(dls)) {
             Element dl = dls.get(dls.size() - 2);
-            String subUrl = "http://task.zhubajie.com" + dl.attr("href");
+            String subUrl = "http://task.zbj.com" + dl.attr("href");
             String countStr = dl.text();
             int length = subUrl.length();
             task.setSubUrlPrefix(subUrl.substring(0, length - countStr.length() - ".html".length()));
@@ -338,14 +414,15 @@ public class TaskTool {
                      + "release_Province, release_City, release_Source, task_Status, "
                      + "mobile_Authen, realName_Authen, completement_Security, origin_Work, "
                      + "remark, sub_Url_Prefix, sub_Count, payment_Detail, "
-                     + "first_Catagory, second_Catagory, piecework_Amt, selected_Count, need_Count, count_Per_Worker, "
+                     + "catagory, first_Catagory, second_Catagory, third_Catagory,"
+                     + "piecework_Amt, selected_Count, need_Count, count_Per_Worker, "
                      + "process_Info, p_Release_Status, p_Release_Date, p_Crowd_Submit_Status, p_Crowd_Submit_Date, "
                      + "p_Employer_Choose_Status, p_Employer_Choose_Date, p_Payment_Complete_Status, p_Payment_Complete_Date, "
                      + "p_Announce_Choice_Status, p_Announce_ChoiceDate, p_Appoint_Work_Status, p_Appoint_Work_Date, "
                      + "p_Evaluation_Status, p_Evaluation_Date) values ('"
                      + task.getTaskId()
                      + "','"
-                     + task.getTaskTitle()
+                     + task.getTaskTitle().replace("'", "")
                      + "','"
                      + task.getTaskReleaseDate()
                      + "','"
@@ -393,9 +470,13 @@ public class TaskTool {
                      + "','"
                      + task.getPaymentDetail()
                      + "','"
+                     + task.getCatagory()
+                     + "','"
                      + task.getFirstCatagory()
                      + "','"
                      + task.getSecondCatagory()
+                     + "','"
+                     + task.getThirdCatagory()
                      + "',"
                      + task.getPieceworkAmt()
                      + ","
@@ -433,8 +514,8 @@ public class TaskTool {
                      + "','"
                      + task.getpEvaluationStatus()
                      + "','" + task.getpEvaluationDate() + "')";
-
-        logger.info("插入语句:" + sql.replace("\r", " ").replace("\n", " ").replace("'null'", "null"));
+        sql = sql.replace("\r", " ").replace("\n", " ").replace("'null'", "null");
+        logger.info("插入语句:" + sql);
         try {
             int rs = stmt.executeUpdate(sql);
             if (rs == 1) {

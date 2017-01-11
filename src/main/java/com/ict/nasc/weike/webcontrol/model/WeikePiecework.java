@@ -52,6 +52,13 @@ public class WeikePiecework {
     private boolean recommentEmploy = false;
 
     /** --------------------------------------用户标示  END  ----------------------------------------------*/
+
+    /**雇主评价**/
+    private String  evaluation;
+
+    /**评论**/
+    private String  comments;
+
     /** 
      * 
      * @see java.lang.Object#toString()
@@ -384,4 +391,41 @@ public class WeikePiecework {
         this.recommentEmploy = recommentEmploy;
     }
 
+    /**
+     * Getter method for property <tt>evaluation</tt>.
+     * 
+     * @return property value of evaluation
+     */
+    public String getEvaluation() {
+        return evaluation;
+    }
+
+    /**
+     * Getter method for property <tt>comments</tt>.
+     * 
+     * @return property value of comments
+     */
+    public String getComments() {
+        return comments;
+    }
+
+    /**
+     * Setter method for property <tt>evaluation</tt>.
+     * 
+     * @param evaluation value to be assigned to property evaluation
+     */
+    public void setEvaluation(String evaluation) {
+        this.evaluation = evaluation;
+    }
+
+    /**
+     * Setter method for property <tt>comments</tt>.
+     * 
+     * @param comments value to be assigned to property comments
+     */
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
+    
 }

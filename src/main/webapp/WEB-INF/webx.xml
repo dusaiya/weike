@@ -41,6 +41,9 @@
 
     <!-- URI生成。 -->
     <beans:import resource="common/uris.xml" />
+    
+    <!-- spring bean loader -->
+    <beans:import resource="spring-context.xml" />
 
     <!-- 综合设置。 -->
     <services:webx-configuration>

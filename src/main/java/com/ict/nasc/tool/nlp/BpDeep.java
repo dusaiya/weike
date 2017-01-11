@@ -6,6 +6,8 @@ package com.ict.nasc.tool.nlp;
 
 import java.util.Random;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * 
  * @author xueye.duanxy

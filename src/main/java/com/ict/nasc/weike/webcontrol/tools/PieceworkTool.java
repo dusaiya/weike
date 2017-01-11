@@ -16,16 +16,16 @@ import org.jsoup.select.Elements;
 
 import com.ict.nasc.weike.webcontrol.model.WeikePiecework;
 
-
 /**
  * 
  * @author xueye.duanxy
  * @version $Id: PieceworkTool.java, v 0.1 2015-12-4 下午12:18:31  Exp $
  */
 public class PieceworkTool {
-    
+
     /**日志*/
-    private static Log              logger = LogFactory.getLog("NORMAL");
+    private static Log logger = LogFactory.getLog("PIECEWORK");
+
     /**
      * 
      * @param dl
@@ -33,18 +33,45 @@ public class PieceworkTool {
      */
     public static void deliveryElement(Element dl, WeikePiecework piecework) {
         Elements aEles = dl.select("div.usertitle");
-        //用户信息
-        userInfo(piecework, aEles);
-        //用户能力信息
-        userAbility(dl, piecework);
         //交稿标签信息
         pieceworkTags(dl, piecework);
+        //用户信息
+        userInfo(piecework, aEles);
+        //补充userId
+        if (StringUtils.isBlank(piecework.getUserId())) {
+            String userIdPicPath = dl.select("img").attr("src");
+            piecework.setUserId(ImgUrl2UserId.imgUrl2UserId(userIdPicPath));
+        }
+        //用户能力信息
+        userAbility(dl, piecework);
+
         //结果标签
         resultLable(dl, piecework);
 
         //主题内容大字段
         pieceworkContent(dl, piecework);
+        //更新雇主评价、comment评论
+        textEvaluationAndComments(dl, piecework);
 
+    }
+
+    /**
+     * 
+     * @param dl
+     * @param piecework
+     */
+    private static void textEvaluationAndComments(Element dl, WeikePiecework piecework) {
+        Elements aEles;
+        aEles = dl.select("div.user-comment").select("p.username");
+        if (CollectionUtils.isNotEmpty(aEles)) {
+            piecework.setComments(aEles.toString().replace("'", "").replace(";", "")
+                .replace(",", "").replace("\\", ""));
+        }
+        aEles = dl.select("table.mt10").select("p");
+        if (CollectionUtils.isNotEmpty(aEles)) {
+            piecework.setEvaluation(aEles.toString().replace("'", "").replace(";", "")
+                .replace(",", "").replace("\\", ""));
+        }
     }
 
     /**
@@ -104,8 +131,8 @@ public class PieceworkTool {
         Elements aEles;
         //交稿信息
         aEles = dl.select("div.ntos");
-        piecework.setSummitTime(aEles.select("span.time").get(0).attr("title"));//交稿时间
         piecework.setPieceworkId(aEles.select("a.bidid").get(0).text());//参与编号
+        piecework.setSummitTime(aEles.select("span.time").get(0).attr("title"));//交稿时间
         piecework.setUserSource(aEles.select("a.likt").get(0).text());//来源
         //浏览状况
         aEles = aEles.select("span.browse");
@@ -183,6 +210,7 @@ public class PieceworkTool {
                 piecework.setUserId(strList[3]);
             }
         }
+
     }
 
     /**
@@ -196,7 +224,8 @@ public class PieceworkTool {
                      + "user_id, user_name, user_url, "
                      + "ability_level, ability_value, ability_str, "
                      + "submit_time, user_source, read_status, work_quality, "
-                     + "special_customer_type, fuwubao," + " recomment_employ, recommend_customer,"
+                     + "special_customer_type, fuwubao,"
+                     + " recomment_employ, recommend_customer,comments, evaluation, "
                      + " content) values ('"
                      + piecework.getPieceworkId()
                      + "','"
@@ -206,7 +235,8 @@ public class PieceworkTool {
                      + "','"
                      + piecework.getUserId()
                      + "','"
-                     + piecework.getUserName().replace("'", "").replace(";", "").replace(",", "").replace("\\", "")
+                     + piecework.getUserName().replace("'", "").replace(";", "").replace(",", "")
+                         .replace("\\", "")
                      + "','"
                      + piecework.getUserUrl()
                      + "','"
@@ -232,15 +262,17 @@ public class PieceworkTool {
                      + ",'"
                      + piecework.getRecommendCustomer()
                      + "','"
-                     + piecework.getContent().replace("'", "").replace(";", "").replace(",", "").replace("\\", "")
-                     + "')";
-        //System.out.println(sql.replace("\r", " ").replace("\n", " ").replace("'null'", "null"));
+                     + piecework.getComments()
+                     + "','"
+                     + piecework.getEvaluation()
+                     + "','"
+                     + piecework.getContent().replace("'", "").replace(";", "").replace(",", "")
+                         .replace("\\", "") + "')";
         int rs = stmt.executeUpdate(sql.replace("\r", " ").replace("\n", " ")
             .replace("'null'", "null"));
         if (rs < 1) {
             logger.error("【插入数据库失败】taskId:" + piecework.getTaskId() + ";curUrl:"
-                                   + piecework.getCurTaskUrl() + ";pieceworkId"
-                                   + piecework.getPieceworkId());
+                         + piecework.getCurTaskUrl() + ";pieceworkId" + piecework.getPieceworkId());
             throw new SQLException("插入数据库失败");
         }
 

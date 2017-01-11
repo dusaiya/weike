@@ -63,10 +63,13 @@ public class WeikeTask {
     /** 交易细则 **/
     private String  paymentDetail;
     /** --------------------------------------任务归属类目  START----------------------------------------------*/
+    private String  catagory;
     /** 一级类目 **/
     private String  firstCatagory;
     /** 二级类目 **/
     private String  secondCatagory;
+    /** 三级类目 **/
+    private String  thirdCatagory;
     /** --------------------------------------任务归属类目  END  ----------------------------------------------*/
     /** --------------------------------------计件类型属性  START----------------------------------------------*/
     /** 计件价格(分) **/
@@ -948,6 +951,42 @@ public class WeikeTask {
      */
     public void setpEvaluationDate(String pEvaluationDate) {
         this.pEvaluationDate = pEvaluationDate;
+    }
+
+    /**
+     * Getter method for property <tt>catagory</tt>.
+     * 
+     * @return property value of catagory
+     */
+    public String getCatagory() {
+        return catagory;
+    }
+
+    /**
+     * Getter method for property <tt>thirdCatagory</tt>.
+     * 
+     * @return property value of thirdCatagory
+     */
+    public String getThirdCatagory() {
+        return thirdCatagory;
+    }
+
+    /**
+     * Setter method for property <tt>catagory</tt>.
+     * 
+     * @param catagory value to be assigned to property catagory
+     */
+    public void setCatagory(String catagory) {
+        this.catagory = catagory;
+    }
+
+    /**
+     * Setter method for property <tt>thirdCatagory</tt>.
+     * 
+     * @param thirdCatagory value to be assigned to property thirdCatagory
+     */
+    public void setThirdCatagory(String thirdCatagory) {
+        this.thirdCatagory = thirdCatagory;
     }
 
 }

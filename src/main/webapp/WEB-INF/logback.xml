@@ -72,6 +72,36 @@
             ]]></pattern>
 		</layout>
 	</appender>
+	<appender name="PIECEWORK"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<Prudent>true</Prudent>
+		<encoding>UTF-8</encoding>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>
+				/bedroom/duanxueye/weike/log/weike-piecework.%d{yyyy-MM-dd}.log
+			</FileNamePattern>
+		</rollingPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern><![CDATA[
+%n%-4r %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35}[%L] %m
+            ]]></pattern>
+		</layout>
+	</appender>
+	<appender name="PIECEWORK-ERR"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<Prudent>true</Prudent>
+		<encoding>UTF-8</encoding>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>
+				/bedroom/duanxueye/weike/log/weike-piecework-err.%d{yyyy-MM-dd}.log
+			</FileNamePattern>
+		</rollingPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern><![CDATA[
+%n%-4r %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{35}[%L] %m
+            ]]></pattern>
+		</layout>
+	</appender>
 	<logger name="org.apache">
 		<level value="INFO" />
 	</logger>
@@ -90,6 +120,14 @@
 	<logger name="NOT-EXIST">
 		<level value="info" />
 		<appender-ref ref="NOT-EXIST" />
+	</logger>
+	<logger name="PIECEWORK">
+		<level value="info" />
+		<appender-ref ref="PIECEWORK" />
+	</logger>
+	<logger name="PIECEWORK-ERR">
+		<level value="info" />
+		<appender-ref ref="PIECEWORK-ERR" />
 	</logger>
 	<root>
 		<level value="info" />

@@ -14,6 +14,9 @@ public enum WeikePaymentType {
     /** 计件 **/
     piece("piece", "计件"),
 
+    /**微博粉丝数*/
+    weiboFans("weiboFans", "微博粉丝数"),
+
     /** 比稿 比赛 **/
     competition("competition", "比赛"),
 

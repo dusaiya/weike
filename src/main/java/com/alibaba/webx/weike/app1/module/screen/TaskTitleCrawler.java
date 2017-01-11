@@ -11,14 +11,14 @@ import org.apache.commons.logging.LogFactory;
 
 import com.alibaba.citrus.turbine.Context;
 import com.ict.nasc.weike.webcontrol.CommonConstant;
-import com.ict.nasc.weike.webcontrol.database.WeikeCrawler;
+import com.ict.nasc.weike.webcontrol.database.WeikeTitleCrawler;
 
 /**
  * 
  * @author xueye.duanxy
  * @version $Id: TaskCrawler.java, v 0.1 2016-2-16 下午1:36:27  Exp $
  */
-public class TaskCrawler {
+public class TaskTitleCrawler {
     /**日志*/
     private static Log logger = LogFactory.getLog("TASK");
 
@@ -28,12 +28,9 @@ public class TaskCrawler {
     public void execute(Context context) {
 
         try {
-            WeikeCrawler crawler = new WeikeCrawler(CommonConstant.crawlerdbPath);
-            crawler.setThreads(70);
-            String sql = "select a.task_link from mid_task_list_final a "
-                    + "left join task b on a.task_id_str = b.task_id "
-                    + "where  b.task_id is null "
-                    + "order by a.task_id asc";
+            WeikeTitleCrawler crawler = new WeikeTitleCrawler(CommonConstant.crawlerdbPath);
+            crawler.setThreads(120);
+            String sql = "select task_id from task_id_l";
             ResultSet result = crawler.getStmt().executeQuery(sql);
             while (result.next()) {
                 int i = result.getInt("task_id");

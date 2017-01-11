@@ -25,13 +25,13 @@ import com.ict.nasc.weike.webcontrol.tools.TaskTool;
 /**
  * 
  * @author xueye.duanxy
- * @version $Id: zhubajie.java, v 0.1 2015-11-10 上午10:01:03  Exp $
+ * @version $Id: zbj.java, v 0.1 2015-11-10 上午10:01:03  Exp $
  */
 public class WeikeCrawler extends DeepCrawler {
 
     /**日志*/
-    private static Log       logger = LogFactory.getLog("TASK");
-    
+    private static Log       logger          = LogFactory.getLog("TASK");
+
     /**日志*/
     private static Log       notexist_logger = LogFactory.getLog("NOT-EXIST");
     /**
@@ -78,13 +78,13 @@ public class WeikeCrawler extends DeepCrawler {
                     notexist_logger.warn("无该页面:" + page.getUrl());
                     return null;
                 }
-                return null;
+                //return null;
             }
             //文章标题
             dls = page.getDoc().select("h1");
             task.setTaskTitle(dls.get(0).text());
             //发布者信息
-            dls = page.getDoc().select("div.tctitle").select("a");
+            dls = page.getDoc().select("div.user-toltit").select("dl.mt5");
             TaskTool.releaseInfo(task, dls);
             //任务酬劳
             dls = page.getDoc().select("div.money-operate");
@@ -95,10 +95,8 @@ public class WeikeCrawler extends DeepCrawler {
 
             //page.getDoc().select("div.nts") 下注信息
             dls = page.getDoc().select("div.grid").select("ul.ui-breadcrumb").select("li");
-            task.setFirstCatagory(dls.get(0).select("a").attr("title"));
-            if (dls.size() > 1) {
-                task.setSecondCatagory(dls.get(1).select("a").attr("title"));
-            }
+
+            TaskTool.getCatagory(task, dls);
             dls = page.getDoc().select("strong");
             for (Element dl : dls) {
                 String text = dl.text();
@@ -139,7 +137,7 @@ public class WeikeCrawler extends DeepCrawler {
             dls = page.getDoc().select("div.pagination").select("a");
             TaskTool.subUrlInfo(page, task, dls);
             logger.info(task);
-            //TaskTool.insertSql(task, stmt);
+            TaskTool.insertSql(task, stmt);
 
         } catch (Exception e) {
             logger.error(page.getUrl() + "【处理异常】", e);
@@ -152,25 +150,26 @@ public class WeikeCrawler extends DeepCrawler {
         try {
             WeikeCrawler crawler = new WeikeCrawler("/Users/alibaba/Desktop/zhubajie");
 
-            crawler.setThreads(20);
-            //年度跨度为了保证 标签属性相同
-            String sql = "select a.task_link from task_list_final a "
-                         + "left join task b on a.task_id= b.task_id "
-                         + "where a.task_id is not null and b.task_id is null";
+            crawler.setThreads(4);
+            String sql = "select a.task_link from mid_task_list_final a "
+                         + "left join task b on a.task_id_str = b.task_id "
+                         + "where  b.task_id is null "
+                         + "limit 100";
             ResultSet result = stmt.executeQuery(sql);
             while (result.next()) {
                 crawler.addSeed(result.getString("task_link"));
             }
-            //crawler.addSeed("http://task.zhubajie.com/4330315/");
+
             /**
              *
-            crawler.addSeed("http://task.zhubajie.com/4330315/");//计件 粉丝数交付【非常特殊，需要单独处理，包括子任务】
-            crawler.addSeed("http://task.zhubajie.com/741200/");//计件 没有每人限制
-            crawler.addSeed("http://task.zhubajie.com/46963/");//比稿 比赛 2008
-            crawler.addSeed("http://task.zhubajie.com/5157910");//计件 全部完成
-            crawler.addSeed("http://task.zhubajie.com/6452414/");//计件
-            crawler.addSeed("http://task.zhubajie.com/6585339/");//一人独享该赏金, 4项保障
-            crawler.addSeed("http://task.zhubajie.com/6587921/");//招标 2015
+            crawler.addSeed("http://task.zbj.com/5029012/");;//计件 粉丝数交付【非常特殊，需要单独处理，包括子任务】
+            crawler.addSeed("http://task.zbj.com/741200/");//计件 没有每人限制
+            crawler.addSeed("http://task.zbj.com/46963/");//比稿 比赛 2008
+            crawler.addSeed("http://task.zbj.com/5157910");//计件 全部完成
+            crawler.addSeed("http://task.zbj.com/6452414/");//计件
+            crawler.addSeed("http://task.zbj.com/6585339/");//一人独享该赏金, 4项保障
+            crawler.addSeed("http://task.zbj.com/6587921/");//招标 2015
+            crawler.addSeed("http://task.zbj.com/2328519/");//计件userid缺少信息
             **/
             crawler.start(1);
         } catch (Exception e) {

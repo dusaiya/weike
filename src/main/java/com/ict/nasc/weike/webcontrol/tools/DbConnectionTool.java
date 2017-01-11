@@ -19,19 +19,25 @@ public class DbConnectionTool {
     /**
      * 
      */
-    public static final String remote_in_lab = "jdbc:mysql://10.60.1.92:3306/weike?"
-                                               + "user=root&password=ictsoft&useUnicode=true&characterEncoding=UTF8";
+    public static final String remote_in_lab     = "jdbc:mysql://10.60.1.92:3306/weike?"
+                                                   + "user=root&password=ictsoft&useUnicode=true&characterEncoding=UTF8";
+
     /**
      * 
      */
-    public static final String remote_out_lab = "jdbc:mysql://159.226.40.98:3306/weike?"
-                                               + "user=root&password=ictsoft&useUnicode=true&characterEncoding=UTF8";
+    public static final String remote_in_lab_147 = "jdbc:mysql://10.61.2.147:3306/weike?"
+                                                   + "user=shen&password=123456&useUnicode=true&characterEncoding=UTF8";
+    /**
+     * 
+     */
+    public static final String remote_out_lab    = "jdbc:mysql://159.226.40.98:3306/weike?"
+                                                   + "user=root&password=ictsoft&useUnicode=true&characterEncoding=UTF8";
 
     /**
      * 本机连接
      */
-    public static final String local         = "jdbc:mysql://localhost:3306/weike?"
-                                               + "user=root&password=ictsoft&useUnicode=true&characterEncoding=UTF8";
+    public static final String local             = "jdbc:mysql://localhost:3306/weike?"
+                                                   + "user=root&password=ictsoft&useUnicode=true&characterEncoding=UTF8";
 
     /**
      * 获取数据库连接
@@ -43,7 +49,7 @@ public class DbConnectionTool {
     public static Statement getDbStatement() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
         Connection conn = null;
-        String url = remote_in_lab;
+        String url = remote_in_lab_147;
         conn = DriverManager.getConnection(url);
         Statement stmt = conn.createStatement();
         return stmt;

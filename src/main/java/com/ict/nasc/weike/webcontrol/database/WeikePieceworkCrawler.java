@@ -29,7 +29,10 @@ import com.ict.nasc.weike.webcontrol.tools.PieceworkTool;
  */
 public class WeikePieceworkCrawler extends DeepCrawler {
     /**日志*/
-    private static Log logger = LogFactory.getLog("NORMAL");
+    private static Log logger     = LogFactory.getLog("PIECEWORK");
+
+    /**日志*/
+    private static Log logger_err = LogFactory.getLog("PIECEWORK-ERR");
 
     /**
      * 数据库连接
@@ -57,7 +60,7 @@ public class WeikePieceworkCrawler extends DeepCrawler {
         try {
             fileOutput(page);
         } catch (Exception e) {
-            logger.error(page.getUrl() + "[外围处理]", e);
+            logger_err.error(page.getUrl() + "[外围处理]", e);
         }
 
         return null;
@@ -86,22 +89,26 @@ public class WeikePieceworkCrawler extends DeepCrawler {
                 PieceworkTool.insert(piecework, stmt);
             } catch (Exception e) {
                 finished = false;
-                String errSql = "insert into piecework_err ( task_id, piecework_id, cur_task_url )"
-                                + "values ('" + piecework.getTaskId() + "','"
-                                + piecework.getPieceworkId() + "','" + piecework.getCurTaskUrl()
+                String errSql = "insert into mid_piecework_err ( task_id, piecework_id, cur_task_url )"
+                                + "values ('"
+                                + piecework.getTaskId()
+                                + "','"
+                                + piecework.getPieceworkId()
+                                + "','"
+                                + piecework.getCurTaskUrl()
                                 + "')".replace("'null'", "null");
                 try {
                     stmt.executeUpdate(errSql);
                 } catch (Exception e1) {
-                    logger.error(curTaskUrl + "【子任务异常记录失败】" + errSql, e1);
+                    logger_err.error(curTaskUrl + "【子任务异常记录失败】" + errSql, e1);
                 }
             }
         }
         try {
-            stmt.executeUpdate("insert into piecework_record(cur_task_url,count,finished) values('"
+            stmt.executeUpdate("insert into mid_piecework_record(cur_task_url,count,finished) values('"
                                + curTaskUrl + "'," + pieceworkCount + "," + finished + ")");
         } catch (Exception e) {
-            logger.error(curTaskUrl + "【任务结果记录失败】", e);
+            logger_err.error(curTaskUrl + "【任务结果记录失败】", e);
         }
     }
 
@@ -113,8 +120,11 @@ public class WeikePieceworkCrawler extends DeepCrawler {
             WeikePieceworkCrawler crawler = new WeikePieceworkCrawler(
                 "/Users/alibaba/Desktop/zhubajie");
             crawler.setThreads(60);
-            String sql = "select distinct cur_task_url from sub_task limit 1100";
-            //+ "where cur_task_url not in  (select cur_task_url from piecework_record ) limit 10000";
+            String sql = "select distinct a.cur_task_url from sub_task a "
+                         + "left join mid_piecework_record b on a.cur_task_url=b.cur_task_url "
+                         + "where  "
+                         + "b.Cur_task_url is null order by task_id asc";
+            //+ "where cur_task_url not in  (select cur_task_url from mid_piecework_record ) limit 10000";
             ResultSet rs = crawler.getStmt().executeQuery(sql);
             while (rs.next()) {
                 String url = rs.getString("cur_task_url");

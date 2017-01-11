@@ -11,16 +11,16 @@ import org.apache.commons.logging.LogFactory;
 
 import com.alibaba.citrus.turbine.Context;
 import com.ict.nasc.weike.webcontrol.CommonConstant;
-import com.ict.nasc.weike.webcontrol.database.WeikeCrawler;
+import com.ict.nasc.weike.webcontrol.database.WeikePieceworkCrawler;
 
 /**
  * 
  * @author xueye.duanxy
  * @version $Id: TaskCrawler.java, v 0.1 2016-2-16 下午1:36:27  Exp $
  */
-public class TaskCrawler {
+public class PieceworkCrawler {
     /**日志*/
-    private static Log logger = LogFactory.getLog("TASK");
+    private static Log logger = LogFactory.getLog("PIECEWORK");
 
     /**
      * @param context
@@ -28,16 +28,16 @@ public class TaskCrawler {
     public void execute(Context context) {
 
         try {
-            WeikeCrawler crawler = new WeikeCrawler(CommonConstant.crawlerdbPath);
-            crawler.setThreads(70);
-            String sql = "select a.task_link from mid_task_list_final a "
-                    + "left join task b on a.task_id_str = b.task_id "
-                    + "where  b.task_id is null "
-                    + "order by a.task_id asc";
-            ResultSet result = crawler.getStmt().executeQuery(sql);
-            while (result.next()) {
-                int i = result.getInt("task_id");
-                crawler.addSeed("http://task.zbj.com/" + i + "/");
+            WeikePieceworkCrawler crawler = new WeikePieceworkCrawler(CommonConstant.crawlerdbPath);
+            crawler.setThreads(100);
+            String sql = "select distinct a.cur_task_url from sub_task a "
+                         + "left join mid_piecework_record b on a.cur_task_url=b.cur_task_url "
+                         + "where  b.Cur_task_url is null "
+                         + "order by task_id asc";
+            ResultSet rs = crawler.getStmt().executeQuery(sql);
+            while (rs.next()) {
+                String url = rs.getString("cur_task_url");
+                crawler.addSeed(url);
             }
             crawler.start(1);
         } catch (Exception e) {
